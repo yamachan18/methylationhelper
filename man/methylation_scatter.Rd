@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylation_scatter.R
 \name{methylation_scatter}
 \alias{methylation_scatter}
-\title{Impute with the row mean for a matrix with missing values}
+\title{Plot scatterplots for methylation differences between query and reference samples}
 \usage{
 methylation_scatter(
   query_minus_immature,
@@ -17,15 +17,34 @@ methylation_scatter(
 )
 }
 \arguments{
-\item{beta}{A matrix with missing values, where rows are CpGs and columns are samples.}
+\item{query_minus_immature}{A matrix of beta values, where rows are CpGs and columns are samples.}
+
+\item{reference_averages}{A data frame with the average methylation values for each CpG in the reference groups.}
+
+\item{cutoff_value}{Values between 0 and 1 for plotting the cutoff lines. CpGs within the cutoff will be colored differently. Default is 0.2.}
+
+\item{alpha_value}{Values between 0 and 1 controlling the transparency for the scatterplot. Default is 0.1. 1 is fully opaque.}
+
+\item{name_immature}{The name of the immature group to be used on the plot axes.}
+
+\item{name_mature}{The name of the mature group to be used on the plot axes.}
+
+\item{name_tumor}{The name of the tumor group to be used on the plot axes.}
+
+\item{colorslice}{Boolean value whether or not to color the points within the slice of interest. Defaulted to FALSE.}
+
+\item{whichslice}{The slice to color ("hypo" to color the bottom center slice of aberrantly hypomethylated CpGs or
+"hyper" to color the top center slice of aberrantly hypermethylated CpGs).}
 }
 \value{
-A matrix with missing values for each row (CpG) imputed with the mean of the samples.
+A list of ggplot objects.
 }
 \description{
-Impute with the row mean for a matrix with missing values
+Plot scatterplots for methylation differences between query and reference samples
 }
 \details{
-This function takes a matrix with missing values and imputes the missing values for each row (CpG) with the mean of the samples.
-For rows with all missing values, the imputed value will be NA.
+This function generates scatterplots for each sample (column) in the query_minus_immature matrix,
+comparing the methylation differences between the query and reference samples. The function allows for
+customization of cutoff values, transparency, and labeling of the axes. Additionally, it can color points within
+a specified slice of interest (hypomethylated or hypermethylated CpGs) based on the provided parameters.
 }
