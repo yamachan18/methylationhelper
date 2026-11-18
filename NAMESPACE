@@ -5,3 +5,14 @@ export(mean_imputation)
 export(methylation_scatter)
 export(scatter_based_probelist)
 export(vec_to_list)
+importFrom(ggplot2,
+  aes,
+  geom_boxplot,
+  geom_histogram,
+  geom_line,
+  geom_point,
+  ggplot,
+  labs,
+  theme,
+  theme_bw
+)

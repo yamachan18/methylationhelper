@@ -161,3 +161,8 @@ usethis::use_package("tidyr")
 devtools::document()
 ```
 
+```{r}
+usethis::use_r("methylationhelper-package")
+
+devtools::document()
+```
