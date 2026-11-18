@@ -146,9 +146,15 @@ rownames(beta_query_diff) <- rownames(beta_query)
 ```
 
 ```{r}
-methylation_scatter(query_minus_immature = beta_query_diff[,1:3], reference_averages = healthy_averages, alpha =0.1,
+methylation_scatter(query_minus_immature = beta_query_diff[,1:3], reference_averages = healthy_averages, cutoff_value=0.2, alpha =0.1, 
                     name_immature = "Naive B cell", name_mature = "Memory B cell", name_tumor = "Tumor",
                     colorslice=TRUE, whichslice="hypo")
+```
+
+```{r}
+test = scatter_based_probelist(query_minus_immature = beta_query_diff[,1:3], reference_averages = healthy_averages, whichslice="hypo")
+
+lapply(test, function(x){nrow(x)})
 ```
 
 ```{r}
@@ -165,4 +171,12 @@ devtools::document()
 usethis::use_r("methylationhelper-package")
 
 devtools::document()
+```
+
+```{r}
+library(methylationhelper)
+```
+
+```{r}
+
 ```
