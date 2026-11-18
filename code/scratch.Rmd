@@ -127,6 +127,10 @@ library(methylationhelper)
 B_memory = c("Bmem0008", "Bmem0017", "Bmem0192", "Bmem0055", "Bmem0187", "Bmem0031")
 B_naive = c("Bn0149", "Bn0067", "Bn0046", "Bn0188", "Bn0150", "Bn0139")
 
+data("GSE174666")
+
+GSE174666_imputed <- mean_imputation(GSE174666)
+
 healthy_averages = data.frame(
   mean_mature = GSE174666_imputed[,colnames(GSE174666) %in% B_memory] %>% rowMeans(),
   mean_immature = GSE174666_imputed[,colnames(GSE174666) %in% B_naive] %>% rowMeans()
@@ -148,8 +152,11 @@ methylation_scatter(query_minus_immature = beta_query_diff[,1:3], reference_aver
 ```
 
 ```{r}
+usethis::use_package("ggplot2")
+usethis::use_package("dplyr")
+usethis::use_package("tidyr")
+```
 
-
-
-methylation_scatter(GSE171424, "cg00000029", "cg00000108")
+```{r}
+devtools::document()
 ```
