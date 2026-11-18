@@ -1,0 +1,58 @@
+```{r}
+library(devtools) #loads usethis too
+```
+
+```{r}
+use_r("mean_imputation")
+```
+
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+Normal B cells:
+```{r}
+GSE174666 <- read_csv("X:/Labs/Oakes/Illumina_Methylation_Arrays/3-Processed data/from EPIC V1/867K Processed/867K BMIQ GSE174666.csv")
+GSE174666 <- as.data.frame(GSE174666)
+rownames(GSE174666) <- GSE174666$ID
+GSE174666 <- GSE174666[,-1]
+
+annotation_GSE174666 = read_csv("X:/Labs/Oakes/Illumina_Methylation_Arrays/1-Raw Data/EPIC V1 (850K) Raw Data/GSE174666_RAW/annotation.csv")
+```
+
+Lymphoma B cells:
+```{r}
+GSE171424 <- read_csv("X:/Labs/Oakes/Illumina_Methylation_Arrays/3-Processed data/from EPIC V1/867K Processed/867K BMIQ GSE171424.csv")
+GSE171424 <- as.data.frame(GSE171424)
+rownames(GSE171424) <- GSE171424$ID
+GSE171424 <- GSE171424[,-1]
+
+annotation_GSE171424 <- read_csv("X:/Labs/Oakes/Illumina_Methylation_Arrays/1-Raw Data/EPIC V1 (850K) Raw Data/GSE171424_RAW/annotation.csv")
+```
+
+```{r}
+annotation_GSE171424 <- annotation_GSE171424[match(annotation_GSE171424$Sample_Name, colnames(GSE171424)),]
+annotation_GSE174666 <- annotation_GSE174666[match(annotation_GSE174666$Sample_Name, colnames(GSE174666)),]
+```
+
+```{r}
+colnames(GSE171424) <- annotation_GSE171424$sampleid
+colnames(GSE174666) <- annotation_GSE174666$sampleid
+```
+
+```{r}
+dim(GSE171424)
+```
+
+Export these data:
+```{r}
+usethis::use_data(GSE171424)
+```
+
+```{r}
+# Create data to work on
+my_pkg_data <- sample(1000)
+usethis::use_data(my_pkg_data)
+```
