@@ -1,15 +1,24 @@
-#' Impute with the row mean for a matrix with missing values
+#' Plot scatterplots for methylation differences between query and reference samples
 #'
-#' @param beta A matrix with missing values, where rows are CpGs and columns are samples.
-#' @return A matrix with missing values for each row (CpG) imputed with the mean of the samples.
+#' @param query_minus_immature A matrix of beta values, where rows are CpGs and columns are samples.
+#' @param reference_averages A data frame with the average methylation values for each CpG in the reference groups.
+#' @param cutoff_value Values between 0 and 1 for plotting the cutoff lines. CpGs within the cutoff will be colored differently. Default is 0.2.
+#' @param alpha_value Values between 0 and 1 controlling the transparency for the scatterplot. Default is 0.1. 1 is fully opaque.
+#' @param name_immature The name of the immature group to be used on the plot axes.
+#' @param name_mature The name of the mature group to be used on the plot axes.
+#' @param name_tumor The name of the tumor group to be used on the plot axes.
+#' @param colorslice Boolean value whether or not to color the points within the slice of interest. Defaulted to FALSE.
+#' @param whichslice The slice to color ("hypo" to color the bottom center slice of aberrantly hypomethylated CpGs or 
+#' "hyper" to color the top center slice of aberrantly hypermethylated CpGs).
+#' @return A list of ggplot objects.
 #' 
-#' @details This function takes a matrix with missing values and imputes the missing values for each row (CpG) with the mean of the samples.
-#' For rows with all missing values, the imputed value will be NA.
+#' @details This function generates scatterplots for each sample (column) in the query_minus_immature matrix, 
+#' comparing the methylation differences between the query and reference samples. The function allows for 
+#' customization of cutoff values, transparency, and labeling of the axes. Additionally, it can color points within 
+#' a specified slice of interest (hypomethylated or hypermethylated CpGs) based on the provided parameters.
 #' 
 #' @export
-
-
-# this plots for all colnames in query_minus_immature
+#' 
 methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_value=0.2, alpha_value = 0.1,
                                name_immature = "Immature", name_mature = "Mature", name_tumor = "Tumor", 
                                colorslice = FALSE, whichslice=NULL){
@@ -23,7 +32,7 @@ methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_
     
     mydf <- data.frame(mature_minus_immature = reference_averages$mature_minus_immature, 
                        query_minus_immature = query_minus_immature[,i])
-    mydf_narm <- drop_na(mydf)
+    mydf_narm <- tidyr::drop_na(mydf)
   
     gg<-ggplot2::ggplot(mydf_narm, aes(x=mature_minus_immature, y=query_minus_immature)) + 
     geom_scattermore(alpha= alpha_value)+ #alpha changes the density; scattemore speeds up plotting
@@ -82,7 +91,7 @@ methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_
       mydf <- data.frame(mature_minus_immature = reference_averages$mature_minus_immature, 
                        query_minus_immature = query_minus_immature[,i], 
                        colors = yeet)
-      mydf_narm <- drop_na(mydf)
+      mydf_narm <- tidyr::drop_na(mydf)
       
       
       gg<-ggplot2::ggplot(mydf_narm, aes(x=mature_minus_immature, y=query_minus_immature, col=colors)) + 
@@ -143,7 +152,7 @@ methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_
       mydf <- data.frame(mature_minus_immature = reference_averages$mature_minus_immature, 
                        query_minus_immature = query_minus_immature[,i], 
                        colors = yeet)
-      mydf_narm <- drop_na(mydf)
+      mydf_narm <- tidyr::drop_na(mydf)
       
       
       gg<-ggplot2::ggplot(mydf_narm, aes(x=mature_minus_immature, y=query_minus_immature, col=colors)) + 
