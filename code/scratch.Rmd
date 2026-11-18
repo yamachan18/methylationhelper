@@ -118,3 +118,38 @@ use_r("calc_group_avg")
 devtools::check("C:/Users/yama16/Desktop/Github/methylationhelper")
 install("C:/Users/yama16/Desktop/Github/methylationhelper")
 ```
+
+# Examples for scatterplotter
+```{r}
+library(dplyr)
+library(methylationhelper)
+
+B_memory = c("Bmem0008", "Bmem0017", "Bmem0192", "Bmem0055", "Bmem0187", "Bmem0031")
+B_naive = c("Bn0149", "Bn0067", "Bn0046", "Bn0188", "Bn0150", "Bn0139")
+
+healthy_averages = data.frame(
+  mean_mature = GSE174666_imputed[,colnames(GSE174666) %in% B_memory] %>% rowMeans(),
+  mean_immature = GSE174666_imputed[,colnames(GSE174666) %in% B_naive] %>% rowMeans()
+) %>%
+  mutate(mature_minus_immature = mean_mature - mean_immature)
+```
+
+```{r}
+GSE171424_imputed <- mean_imputation(GSE171424)
+beta_query <- GSE171424_imputed
+beta_query_diff = apply(beta_query, 2, function(x){x - healthy_averages$mean_immature}) %>% as.data.frame()
+rownames(beta_query_diff) <- rownames(beta_query)
+```
+
+```{r}
+methylation_scatter(query_minus_immature = beta_query_diff[,1:3], reference_averages = healthy_averages, alpha =0.1,
+                    name_immature = "Naive B cell", name_mature = "Memory B cell", name_tumor = "Tumor",
+                    colorslice=TRUE, whichslice="hypo")
+```
+
+```{r}
+
+
+
+methylation_scatter(GSE171424, "cg00000029", "cg00000108")
+```
