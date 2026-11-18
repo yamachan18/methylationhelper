@@ -112,3 +112,9 @@ use_r("calc_group_avg")
 
 
 ```
+
+
+```{r}
+devtools::check("C:/Users/yama16/Desktop/Github/methylationhelper")
+install("C:/Users/yama16/Desktop/Github/methylationhelper")
+```

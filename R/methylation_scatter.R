@@ -1,3 +1,21 @@
+#' Impute with the row mean for a matrix with missing values
+#'
+#' @param beta A matrix with missing values, where rows are CpGs and columns are samples.
+#' @return A matrix with missing values for each row (CpG) imputed with the mean of the samples.
+#' 
+#' @details This function takes a matrix with missing values and imputes the missing values for each row (CpG) with the mean of the samples.
+#' For rows with all missing values, the imputed value will be NA.
+#'
+#' @examples
+#' m = matrix(1:12, nrow=4, ncol=3)
+#' m[2,2] <- NA
+#' m
+#' m_imputed <- mean_imputation(beta=m)
+#' m_imputed
+#' 
+#' @export
+
+
 # this plots for all colnames in query_minus_immature
 methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_value=0.2, alpha_value = 0.1,
                                name_immature = "Immature", name_mature = "Mature", name_tumor = "Tumor", 
