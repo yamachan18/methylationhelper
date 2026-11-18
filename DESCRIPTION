@@ -1,9 +1,9 @@
 Package: methylationhelper
-Title: What the Package Does (One Line, Title Case)
+Title: Makes Methylation Data Analysis Easier
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person("Kyoko", "Yamaguchi", , "k.yamaguchi18@gmail.com", role = c("aut", "cre"))
+Description: Convenience functions to make DNA methylation data analysis easier.
 License: MIT + file LICENSE
 Config/roxygen2/version: 8.1.1
 Encoding: UTF-8
