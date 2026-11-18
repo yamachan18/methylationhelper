@@ -32,7 +32,7 @@ methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_
     
     mydf <- data.frame(mature_minus_immature = reference_averages$mature_minus_immature, 
                        query_minus_immature = query_minus_immature[,i])
-    mydf_narm <- tidyr::drop_na(mydf)
+    mydf_narm <- na.omit(mydf)
   
     gg<-ggplot2::ggplot(mydf_narm, aes(x=mature_minus_immature, y=query_minus_immature)) + 
     geom_scattermore(alpha= alpha_value)+ #alpha changes the density; scattemore speeds up plotting
@@ -91,7 +91,7 @@ methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_
       mydf <- data.frame(mature_minus_immature = reference_averages$mature_minus_immature, 
                        query_minus_immature = query_minus_immature[,i], 
                        colors = yeet)
-      mydf_narm <- tidyr::drop_na(mydf)
+      mydf_narm <- na.omit(mydf)
       
       
       gg<-ggplot2::ggplot(mydf_narm, aes(x=mature_minus_immature, y=query_minus_immature, col=colors)) + 
@@ -152,7 +152,7 @@ methylation_scatter<- function(query_minus_immature, reference_averages, cutoff_
       mydf <- data.frame(mature_minus_immature = reference_averages$mature_minus_immature, 
                        query_minus_immature = query_minus_immature[,i], 
                        colors = yeet)
-      mydf_narm <- tidyr::drop_na(mydf)
+      mydf_narm <- na.omit(mydf)
       
       
       gg<-ggplot2::ggplot(mydf_narm, aes(x=mature_minus_immature, y=query_minus_immature, col=colors)) + 
