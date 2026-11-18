@@ -2,7 +2,7 @@
 % Please edit documentation in R/scatter_based_probelist.R
 \name{scatter_based_probelist}
 \alias{scatter_based_probelist}
-\title{Impute with the row mean for a matrix with missing values}
+\title{Generate a list of CpGs based on the slice used in methylation_scatter}
 \usage{
 scatter_based_probelist(
   query_minus_immature,
@@ -12,23 +12,24 @@ scatter_based_probelist(
 )
 }
 \arguments{
-\item{beta}{A matrix with missing values, where rows are CpGs and columns are samples.}
+\item{query_minus_immature}{A dataframe of methylation values for the query samples minus the reference samples in the immature group.}
+
+\item{reference_averages}{A data frame with the average methylation values for each CpG in the reference groups.}
+
+\item{cutoff_value}{A numeric value between 0 and 1 for plotting the cutoff lines. CpGs within the cutoff will be colored differently. Default is 0.2.}
+
+\item{whichslice}{The slice to color ("hypo" to color the bottom center slice of aberrantly hypomethylated CpGs or
+"hyper" to color the top center slice of aberrantly hypermethylated CpGs).}
 }
 \value{
-A matrix with missing values for each row (CpG) imputed with the mean of the samples.
+A list where each list element contains a dataframe of CpGs (TargetIDs) that fall within the specified slice for each sample (column) in query_minus_immature.
 }
 \description{
-Impute with the row mean for a matrix with missing values
+Generate a list of CpGs based on the slice used in methylation_scatter
 }
 \details{
-This function takes a matrix with missing values and imputes the missing values for each row (CpG) with the mean of the samples.
-For rows with all missing values, the imputed value will be NA.
-}
-\examples{
-m = matrix(1:12, nrow=4, ncol=3)
-m[2,2] <- NA
-m
-m_imputed <- mean_imputation(beta=m)
-m_imputed
-
+This function identifies CpGs that fall within a specified slice of interest (hypomethylated or hypermethylated)
+based on the differences between query and reference methylation values. It returns a list of dataframes, each containing
+the TargetIDs of CpGs that meet the criteria for each sample in the query_minus_immature matrix. The function allows for
+customization of cutoff values and selection of the slice of interest.
 }

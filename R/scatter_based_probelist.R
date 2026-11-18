@@ -1,20 +1,20 @@
-#' Impute with the row mean for a matrix with missing values
+#' Generate a list of CpGs based on the slice used in methylation_scatter
 #'
-#' @param beta A matrix with missing values, where rows are CpGs and columns are samples.
-#' @return A matrix with missing values for each row (CpG) imputed with the mean of the samples.
+#' @param query_minus_immature A dataframe of methylation values for the query samples minus the reference samples in the immature group.
+#' @param reference_averages A data frame with the average methylation values for each CpG in the reference groups.
+#' @param cutoff_value A numeric value between 0 and 1 for plotting the cutoff lines. CpGs within the cutoff will be colored differently. Default is 0.2.
+#' @param whichslice The slice to color ("hypo" to color the bottom center slice of aberrantly hypomethylated CpGs or 
+#' "hyper" to color the top center slice of aberrantly hypermethylated CpGs).
 #' 
-#' @details This function takes a matrix with missing values and imputes the missing values for each row (CpG) with the mean of the samples.
-#' For rows with all missing values, the imputed value will be NA.
+#' @return A list where each list element contains a dataframe of CpGs (TargetIDs) that fall within the specified slice for each sample (column) in query_minus_immature.
+#' 
+#' @details This function identifies CpGs that fall within a specified slice of interest (hypomethylated or hypermethylated) 
+#' based on the differences between query and reference methylation values. It returns a list of dataframes, each containing 
+#' the TargetIDs of CpGs that meet the criteria for each sample in the query_minus_immature matrix. The function allows for 
+#' customization of cutoff values and selection of the slice of interest.
 #'
-#' @examples
-#' m = matrix(1:12, nrow=4, ncol=3)
-#' m[2,2] <- NA
-#' m
-#' m_imputed <- mean_imputation(beta=m)
-#' m_imputed
 #' 
 #' @export
-
 
 # this plots for all colnames in query_minus_immature
 scatter_based_probelist <- function(query_minus_immature, reference_averages, cutoff_value=0.2, whichslice){

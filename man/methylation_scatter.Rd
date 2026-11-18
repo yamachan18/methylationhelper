@@ -17,13 +17,13 @@ methylation_scatter(
 )
 }
 \arguments{
-\item{query_minus_immature}{A matrix of beta values, where rows are CpGs and columns are samples.}
+\item{query_minus_immature}{A dataframe of methylation values for the query samples minus the reference samples in the immature group.}
 
 \item{reference_averages}{A data frame with the average methylation values for each CpG in the reference groups.}
 
-\item{cutoff_value}{Values between 0 and 1 for plotting the cutoff lines. CpGs within the cutoff will be colored differently. Default is 0.2.}
+\item{cutoff_value}{A numeric value between 0 and 1 for plotting the cutoff lines. CpGs within the cutoff will be colored differently. Default is 0.2.}
 
-\item{alpha_value}{Values between 0 and 1 controlling the transparency for the scatterplot. Default is 0.1. 1 is fully opaque.}
+\item{alpha_value}{A numeric value between 0 and 1 controlling the transparency for the scatterplot. Default is 0.1. 1 is fully opaque.}
 
 \item{name_immature}{The name of the immature group to be used on the plot axes.}
 
