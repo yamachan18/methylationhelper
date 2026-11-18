@@ -46,9 +46,14 @@ colnames(GSE174666) <- annotation_GSE174666$sampleid
 dim(GSE171424)
 ```
 
+```{r}
+dim(GSE174666)
+```
+
 Export these data:
 ```{r}
 usethis::use_data(GSE171424)
+usethis::use_data(GSE174666)
 ```
 
 ```{r}
