@@ -92,5 +92,23 @@ check()
 ```
 
 ```{r}
+library(methylationhelper)
+```
+
+```{r}
+hmm = mean_imputation(GSE171424)
+```
+
+```{r}
+rowsNA_after<-is.na(rowSums(hmm))
+table(rowsNA_after)
+```
+
+```{r}
+use_r("methylation_scatter")
+use_r("scatter_based_probelist")
+use_r("vec_to_list")
+use_r("calc_group_avg")
+
 
 ```
