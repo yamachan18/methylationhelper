@@ -61,3 +61,32 @@ usethis::use_data(GSE174666)
 my_pkg_data <- sample(1000)
 usethis::use_data(my_pkg_data)
 ```
+
+```{r}
+# roxygen2 generates separate .Rd for each dataset
+devtools::document()
+```
+
+
+```{r}
+load_all()
+```
+
+```{r}
+GSE171424_imputed <- mean_imputation(GSE171424)
+```
+
+Check that the function worked:
+```{r}
+rowsNA_before<-is.na(rowSums(GSE171424))
+table(rowsNA_before)
+```
+
+```{r}
+rowsNA_after<-is.na(rowSums(GSE171424_imputed))
+table(rowsNA_after)
+```
+
+```{r}
+check()
+```
