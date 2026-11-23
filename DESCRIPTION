@@ -1,6 +1,6 @@
 Package: methylationhelper
 Title: Makes Methylation Data Analysis Easier
-Version: 0.0.0.9100
+Version: 0.0.0.9200
 Authors@R: 
     person("Kyoko", "Yamaguchi", , "k.yamaguchi18@gmail.com", role = c("aut", "cre"))
 Description: Convenience functions to make DNA methylation data analysis easier.
