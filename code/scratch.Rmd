@@ -151,11 +151,59 @@ methylation_scatter(query_minus_immature = beta_query_diff[,1:3], reference_aver
                     colorslice=TRUE, whichslice="hypo")
 ```
 
+
 ```{r}
 test = scatter_based_probelist(query_minus_immature = beta_query_diff[,1:3], reference_averages = healthy_averages, whichslice="hypo")
 
 lapply(test, function(x){nrow(x)})
 ```
+
+# Subtraction-based method of coming up with probelist
+
+```{r}
+GSE171424_list = vec_to_list(annotation_GSE171424$cell_type, annotation_GSE171424$sampleid)
+head(GSE171424_list)
+```
+
+```{r}
+GSE174666_list = vec_to_list(annotation_GSE174666$cell_type, annotation_GSE174666$sampleid)
+head(GSE174666_list)
+```
+
+```{r}
+GSE171424_avg = calc_group_avg(betadf = GSE171424_imputed, l_groupings = GSE171424_list) %>% as.data.frame()
+GSE174666_avg = calc_group_avg(betadf = GSE174666_imputed, l_groupings = GSE174666_list) %>% as.data.frame()
+
+head(GSE171424_avg)
+head(GSE174666_avg)
+```
+
+```{r}
+# Comparison = query - reference
+referencecolumn = "memory B"
+IGA_compare = GSE171424_avg - GSE174666_avg[,colnames(GSE174666_avg) %in% referencecolumn]
+colnames(IGA_compare) <- paste0(colnames(GSE171424_avg), " vs ", referencecolumn)
+```
+
+```{r}
+l_comparisons = df_to_list(df=IGA_compare)
+```
+
+```{r}
+# set the cutoff for the query to be "differentially methylated" from the reference
+cutoff = 0.2
+
+# CPGIDs hypermethylated in query compared to reference
+l_cutoff_up = lapply(l_comparisons , function(x){x[which(x >= cutoff)]})
+
+# CPGIDs hypomethylated in query compared to reference
+l_cutoff_down = lapply(l_comparisons, function(x){x[which(x <= -cutoff)]})
+```
+
+
+
+
+
 
 ```{r}
 usethis::use_package("ggplot2")
