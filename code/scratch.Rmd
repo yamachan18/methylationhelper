@@ -200,10 +200,39 @@ l_cutoff_up = lapply(l_comparisons , function(x){x[which(x >= cutoff)]})
 l_cutoff_down = lapply(l_comparisons, function(x){x[which(x <= -cutoff)]})
 ```
 
+```{r}
+l_df_query_up = list_of_beta_subset(betadf = GSE171424_imputed , list_of_cpgs = l_cutoff_up, list_of_groupings = GSE171424_list)
 
+# the lenghth of the list of references should match that of the list of query
+# we are using the memory B cells as the reference and replicating that for each item on the list of queries.
 
+l_df_reference_up = list_of_beta_subset(betadf = GSE174666_imputed , list_of_cpgs = l_cutoff_up, list_of_groupings = GSE174666_list, 
+                                        name_of_reference = "memory B")
+```
 
+```{r}
+l_df_query_down = list_of_beta_subset(betadf = GSE171424_imputed , list_of_cpgs = l_cutoff_down, list_of_groupings = GSE171424_list)
 
+# the lenghth of the list of references should match that of the list of query
+# we are using the memory B cells as the reference and replicating that for each item on the list of queries.
+
+l_df_reference_down = list_of_beta_subset(betadf = GSE174666_imputed , list_of_cpgs = l_cutoff_down, list_of_groupings = GSE174666_list, 
+                                        name_of_reference = "memory B")
+```
+
+```{r}
+l_wil_up = fun_wilcoxon(list_of_cpgs = l_cutoff_up, list_of_dfs_ref = l_df_reference_up, list_of_dfs_query = l_df_query_up)
+names(l_wil_up)<- names(l_comparisons)
+```
+
+```{r}
+l_wil_down = fun_wilcoxon(list_of_cpgs = l_cutoff_down, list_of_dfs_ref = l_df_reference_down, list_of_dfs_query = l_df_query_down)
+names(l_wil_down)<- names(l_comparisons)
+```
+
+```{r}
+lapply(l_wil_up, function(x){sum(x$pval_fdr < 0.05)})
+```
 
 ```{r}
 usethis::use_package("ggplot2")
