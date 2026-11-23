@@ -27,3 +27,30 @@
 #' }
 #' @source <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174666>
 "GSE174666"
+
+#' Annotation for GSE171424
+#'annotation_GSE171424'
+#'
+#' A data frame with 37 rows and 4 columns:
+#' \describe{
+#'   \item{Sample_Name}{Unique identifier from GEO prefixed by "GSM".}
+#'   \item{sampleid}{Sample IDs.}
+#'   \item{Description}{Description of the sample, e.g. "genomic DNA from CLL/SLL (FFPE)".}
+#'   \item{cell_type}{Cell type, e.g. "CLL".}
+#'   ...
+#' }
+#' @source <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171424>
+"annotation_GSE171424"
+
+#' Annotation for GSE174666
+#'annotation_GSE174666'
+#'
+#' A data frame with 12 rows and 3 columns:
+#' \describe{
+#'   \item{Sample_Name}{Unique identifier from GEO prefixed by "GSM".}
+#'   \item{sampleid}{Sample IDs}
+#'   \item{cell_type}{Cell type, e.g. "memory B".}
+#'   ...
+#' }
+#' @source <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174666>
+"annotation_GSE174666"

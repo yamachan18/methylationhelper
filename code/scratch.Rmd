@@ -50,6 +50,23 @@ dim(GSE171424)
 dim(GSE174666)
 ```
 
+Export annotation:
+
+```{r}
+usethis::use_data(annotation_GSE171424, overwrite=TRUE)
+usethis::use_data(annotation_GSE174666, overwrite=TRUE) 
+```
+
+```{r}
+glimpse(annotation_GSE171424)
+glimpse(annotation_GSE174666)
+```
+
+```{r}
+annotation_GSE171424 <- annotation_GSE171424[,-1]
+annotation_GSE174666 <- annotation_GSE174666[,-1]
+```
+
 Export these data:
 ```{r}
 usethis::use_data(GSE171424)
