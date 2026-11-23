@@ -234,6 +234,80 @@ names(l_wil_down)<- names(l_comparisons)
 lapply(l_wil_up, function(x){sum(x$pval_fdr < 0.05)})
 ```
 
+
+
+```{r}
+illumina_annotation = read_csv("data/annotation/infinium-methylationepic-v-1-0-b5-manifest-file.csv", skip=7)
+```
+
+```{r}
+cpg_intersect = intersect(rownames(GSE171424_imputed), illumina_annotation$IlmnID)
+length(cpg_intersect)
+```
+
+Using the healthy memory B cells as the reference to calculate the background for 1 sample. Manually assign column names expected in the original code by Brian Giacopelli to calculate background:
+
+```{r}
+ref_pre = data.frame(TargetID = rownames(GSE174666_avg),
+                     refMean = GSE174666_avg$`memory B`)
+
+ref = illumina_annotation[illumina_annotation$IlmnID %in% cpg_intersect,] %>% 
+  left_join(ref_pre, by=c("IlmnID" = "TargetID")) %>% 
+  mutate(`CHR` = paste0("chr", `CHR`)) %>% 
+  mutate(`END` = as.numeric(`MAPINFO`)+1) %>%
+  dplyr::select(c("IlmnID", "CHR", "MAPINFO", "END", "refMean")) %>% 
+  rename("TargetID" = "IlmnID")
+```
+
+Evaluate for one example.
+listofdfs stores the foreground probes as a dataframe with the column "Target ID" for easier merging later on.
+
+```{r}
+listofdfs = list(data.frame(TargetID = names(l_cutoff_down[["CLL vs memory B"]])))
+names(listofdfs) <- c("CLL vs memory B")
+```
+
+
+```{r}
+# listofdfs = readRDS("data/listofdfs_n1.RDS")
+# ref = readRDS("data/ref.RDS")
+```
+
+```{r}
+# mergedtable = ref
+```
+
+```{r}
+# parentdir = "HOMERinputs/Bcell_example"
+
+# for (i in 1:length(listofdfs)){
+  
+#   q = names(listofdfs)[i]
+  
+#   dir.create(path=file.path(parentdir, q), recursive=TRUE)
+  
+# }
+
+```
+
+```{r}
+make_backgrounds(listofdfs=listofdfs, reference=ref, seed=123, write = TRUE, write_dir="HOMERinputs/Bcell_example")
+```
+
+```{r}
+listofdfs = list(
+  data.frame(TargetID = names(l_cutoff_down[["CLL vs memory B"]])),
+  data.frame(TargetID = names(l_cutoff_up[["SMZL vs memory B"]])),
+  data.frame(TargetID = names(l_cutoff_down[["MCL vs memory B"]]))
+  )
+names(listofdfs) <- c("CLL vs memory B", "SMZL vs memory B", "MCL vs memory B")
+
+# save as a list of lists
+l_l_HOMER =  make_backgrounds(listofdfs=listofdfs, reference=ref, seed=123, write = FALSE)
+```
+
+
+
 ```{r}
 usethis::use_package("ggplot2")
 usethis::use_package("dplyr")
