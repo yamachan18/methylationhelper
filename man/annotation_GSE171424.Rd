@@ -6,7 +6,7 @@
 \title{Annotation for GSE171424
 annotation_GSE171424'}
 \format{
-An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 37 rows and 4 columns.
+An object of class \code{data.frame} with 37 rows and 4 columns.
 }
 \source{
 \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171424}
