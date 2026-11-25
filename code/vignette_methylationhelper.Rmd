@@ -1,0 +1,360 @@
+---
+title: "Vignette for methylationhelper"
+output:
+  pdf_document: default
+  html_document: default
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Install package methylationhelper
+
+```{r, eval=FALSE}
+# install.packages("remotes")
+remotes::install_github("yamachan18/methylationhelper")
+```
+
+```{r}
+library(methylationhelper)
+packageVersion("methylationhelper")
+```
+
+If you need to reinstall a newer version, run:
+
+```{r, eval=FALSE}
+detach("package:methylationhelper", unload=TRUE)
+remotes::install_github("yamachan18/methylationhelper", force=TRUE)
+```
+
+Load other useful libraries: 
+
+```{r}
+library(tidyverse)
+```
+
+# Data preprocessing
+
+GSE171424 and GSE174666 are dataframes where rows are CpG IDs and columns are sample IDs. (Source: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171424, https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174666)
+
+They have corresponding annotation tables (annotation_GSE171424 and annotation_GSE174666) with more detailed information on the samples.
+
+GSE171424 contains DNA methylation beta values from B cell lymphomas, while GSE174666 contains DNA methylation beta values from healthy B cell subsets.
+
+Also, we should note that the GSE171424 contains data from DNA isolated from FFPE samples, while GSE174666 contains data from DNA isolated after FACS purification of B cell subsets. Since FFPE samples likely contain surrounding cell types, the tumor DNA purity will be lower than that for DNA isolated post-FACS purification. We will discuss tumor DNA purity in a separate vignette.
+
+The R package "RnBeads" (Version 2.28.0) was used to process the raw idat files downloaded from GEO. Since no other processing was done, these dataframes inevitably contain NAs. We will perform mean imputation to get rid of them.
+
+Number of rows containing any NA values before imputation:
+
+```{r}
+rowsNA_before<-is.na(rowSums(GSE171424))
+table(rowsNA_before)
+```
+
+```{r}
+GSE171424_imputed <- mean_imputation(GSE171424)
+```
+
+Check that the function worked:
+
+```{r}
+rowsNA_after<-is.na(rowSums(GSE171424_imputed))
+table(rowsNA_after)
+```
+
+We see there is still 1 row remaining, that could not be imputed:
+
+```{r}
+GSE171424[which(rowsNA_after),] %>% unlist()
+```
+
+This row, corresponding to cg06180910, never had values to begin with, so it could not be imputed with the row mean.
+
+We add this to a list of CpGs to drop later:
+
+```{r}
+drop_GSE171424 = rownames(GSE171424)[which(rowsNA_after)]
+```
+
+Do the same for the other dataframe:
+
+```{r}
+GSE174666_imputed <- mean_imputation(GSE174666)
+rowsNA_after<-is.na(rowSums(GSE174666_imputed))
+table(rowsNA_after)
+```
+
+```{r}
+drop_GSE174666 = rownames(GSE174666)[which(rowsNA_after)]
+```
+
+In an unfiltered dataframe of beta values, there are usually probes used for quality control and SNP detection that should be removed before further analysis. For Illumina DNA methylation arrays, they are prefixed by two lowercase letters indicating their type.
+
+```{r}
+substr(rownames(GSE171424), start=1, stop=2) %>%  table()
+```
+
+* cg: CpG methylation sites
+
+* ch: non-CpG methylation sites
+
+* rs: SNP probes
+
+```{r}
+dropthese = c(drop_GSE171424, drop_GSE174666) %>% 
+  c(., grep("^rs", rownames(GSE171424), value = TRUE)) %>% 
+  c(., grep("^ch", rownames(GSE171424), value = TRUE)) %>%
+  unique()
+```
+
+```{r}
+GSE174666_imputed <- GSE174666_imputed[-which(rownames(GSE174666_imputed) %in% dropthese),]
+GSE171424_imputed <- GSE171424_imputed[-which(rownames(GSE171424_imputed) %in% dropthese),]
+```
+
+```{r}
+dim(GSE174666_imputed)
+dim(GSE171424_imputed)
+```
+
+# Finding scatterplot-based foreground probes
+
+To use the custom function calc_group_avg to calculate the average beta value per group, first use the vec_to_list function on columns from the annotation table to convert to a list:
+
+```{r}
+l_GSE174666 = vec_to_list(vec_groups = annotation_GSE174666$cell_type, 
+                          vec_values = annotation_GSE174666$sampleid)
+l_GSE174666
+```
+
+The calc_group_avg operates on this list and the dataframe/matrix of beta values. The items in the list should match at least some of the column names in the beta values matrix. We perform this for GSE174666, which contains the reference groups.
+
+The last column should be the difference of the "mature" and "immature" subtype.
+
+```{r}
+avg_GSE174666 = calc_group_avg(betadf = GSE174666_imputed, 
+                               l_groupings = l_GSE174666) %>% 
+  as.data.frame() %>%
+  mutate(mature_minus_immature = `memory B` - `naive B`)
+
+head(avg_GSE174666)
+```
+
+We then repeat this for the query, which are the lymphoma samples.
+
+```{r}
+l_GSE171424 = vec_to_list(vec_groups = annotation_GSE171424$cell_type, vec_values = annotation_GSE171424$sampleid)
+l_GSE171424
+
+avg_GSE171424 =  calc_group_avg(betadf = GSE171424_imputed, l_groupings = l_GSE171424)
+```
+
+Calculate the difference of the group means between each column in the query and the "immature" subtype, in this case the naive B cells.
+
+```{r}
+query_minus_ref = apply(avg_GSE171424, 2, function(x){x - avg_GSE174666$`naive B`}) %>% as.data.frame()
+```
+
+The function methylation_scatter() will produce scatterplots for each of the groups in l_GSE171424 (i.e. "CLL", "SMZL", "eMZL", etc.)
+The parameter whichslice="hypo" indicates probes that are aberrantly hypomethylated.
+
+```{r}
+methylation_scatter(query_minus_immature = query_minus_ref, 
+                    reference_averages = avg_GSE174666, 
+                    cutoff_value=0.2, 
+                    alpha =0.1, 
+                    name_immature = "Naive B cell", name_mature = "Memory B cell", name_tumor = "Tumor",
+                    colorslice=TRUE, whichslice="hypo")
+```
+
+Change whichslice = "hyper" to color the probes that are aberrantly hypomethylated:
+
+```{r}
+methylation_scatter(query_minus_immature = query_minus_ref, 
+                    reference_averages = avg_GSE174666, 
+                    cutoff_value=0.2, 
+                    alpha =0.1, 
+                    name_immature = "Naive B cell", name_mature = "Memory B cell", name_tumor = "Tumor",
+                    colorslice=TRUE, whichslice="hyper")
+```
+
+
+If you want the probelist corresponding to the scatterplot, use function scatter_based_probelist(), which contains a subset of the parameters used in methylation_scatter():
+
+```{r}
+probelist = scatter_based_probelist(query_minus_immature = query_minus_ref, 
+                        reference_averages = avg_GSE174666, 
+                        cutoff_value=0.2,
+                        whichslice="hypo")
+```
+
+The CpG IDs returned from scatter_based_probelist() can be used as the foreground probes for HOMER motif enrichment analysis (more on that later).
+
+# Subtraction-based method of coming up with probelist
+
+This is a separate method for generating lists of aberrantly hypomethylated/hypermethylated probes.
+
+First, designate what group to compare the query against.
+
+```{r}
+referencecolumn = "memory B"
+```
+
+Then compute the query - reference comparisons.
+
+```{r}
+# Comparison = query - reference
+avg_compare = avg_GSE171424 - avg_GSE174666[,colnames(avg_GSE174666) %in% referencecolumn]
+colnames(avg_compare) <- paste0(colnames(avg_GSE171424), " vs ", referencecolumn)
+```
+
+```{r}
+l_comparisons = df_to_list(df=avg_compare)
+```
+
+Set the cutoff for CpG IDs in the query to be "differentially methylated" compared to the reference.
+Then, generate a list of CpG IDs that are hypermethylated/hypomethylated in the query compared to the reference.
+
+```{r}
+cutoff = 0.2
+
+# CPGIDs hypermethylated in query compared to reference
+l_cutoff_up = lapply(l_comparisons , function(x){x[which(x >= cutoff)]})
+
+# CPGIDs hypomethylated in query compared to reference
+l_cutoff_down = lapply(l_comparisons, function(x){x[which(x <= -cutoff)]})
+```
+
+Feed the original beta values, the list of differentially methylated CpG IDs, and list of groups for which to perform statistical testing on for the query. The length of the list of queries and list of references should match.
+
+```{r}
+l_df_query_up = list_of_beta_subset(betadf = GSE171424_imputed, 
+                                    list_of_cpgs = l_cutoff_up, 
+                                    list_of_groupings = l_GSE171424)
+
+l_df_reference_up = list_of_beta_subset(betadf = GSE174666_imputed, 
+                                        list_of_cpgs = l_cutoff_up, 
+                                        list_of_groupings = l_GSE174666, 
+                                        name_of_reference = referencecolumn)
+```
+
+```{r}
+l_df_query_down = list_of_beta_subset(betadf = GSE171424_imputed, 
+                                      list_of_cpgs = l_cutoff_down,
+                                      list_of_groupings = l_GSE171424)
+
+l_df_reference_down = list_of_beta_subset(betadf = GSE174666_imputed,
+                                          list_of_cpgs = l_cutoff_down, 
+                                          list_of_groupings = l_GSE174666, 
+                                          name_of_reference = referencecolumn)
+```
+
+Perform Wilcoxon rank-sum test (a nonparametric analogue of the 2-sample T-test) on each query group vs. reference, per CpG ID to see which out of those that passed the numerical cutoff (+/- 0.2) for "differential methylation" are statistically significant.
+
+Note, this may take a few minutes to run depending on how large your list is.
+
+```{r}
+l_wil_up = fun_wilcoxon(list_of_cpgs = l_cutoff_up, 
+                        list_of_dfs_ref = l_df_reference_up, 
+                        list_of_dfs_query = l_df_query_up)
+names(l_wil_up)<- names(l_comparisons)
+```
+
+```{r}
+l_wil_down = fun_wilcoxon(list_of_cpgs = l_cutoff_down, 
+                          list_of_dfs_ref = l_df_reference_down, 
+                          list_of_dfs_query = l_df_query_down)
+names(l_wil_down)<- names(l_comparisons)
+```
+
+The p-values for the Wilcoxon rank sum test (raw, FDR-corrected, and Bonferroni-corrected) are stored as a dataframe that you can use to subset the list of CpGs of interest.
+
+```{r}
+lapply(l_wil_up, function(x){sum(x$pval_fdr < 0.05)})
+```
+
+# Creating backgrounds to be used for HOMER motif enrichment analysis
+
+Download Illumina manifest files where CpG IDs are annotated with genomic coordinates.
+Source: https://support.illumina.com/downloads/infinium-methylationepic-v1-0-product-files.html
+
+Note: Here, we are using the Infinium Methylation EPIC V1 manifest files, which matches the Illumina array used in GSE171242 and GSE174666. If your experiment was done with Infinium Methylation EPIC V2 or Beadchip 450K, please download the corresponding manifest files.
+
+Read this into R:
+
+```{r}
+illumina_annotation = read_csv("data/annotation/infinium-methylationepic-v-1-0-b5-manifest-file.csv", skip=7)
+```
+
+Here we use the healthy memory B cells as the reference to calculate the background.
+
+As the code stands now, columns need to be named in a specific way to be able to use the make_backgrounds() function. This will likely be improved in later versions of methylationhelper. 
+
+```{r}
+ref_pre = data.frame(TargetID = rownames(avg_GSE174666),
+                     refMean = avg_GSE174666$`memory B`)
+
+ref = illumina_annotation %>% 
+  left_join(ref_pre, by=c("IlmnID" = "TargetID")) %>% 
+  mutate(`CHR` = paste0("chr", `CHR`)) %>% 
+  mutate(`END` = as.numeric(`MAPINFO`)+1) %>%
+  dplyr::select(c("IlmnID", "CHR", "MAPINFO", "END", "refMean")) %>% 
+  rename("TargetID" = "IlmnID") %>%
+  as.data.frame()
+```
+
+This is the format the reference dataframe needs to be in:
+
+```{r}
+head(ref)
+```
+
+Make a list of foreground probes as 1-column dataframes to store the CpG IDs. Again, this is to match the specific format required for the inputs in the make_backgrounds() function.
+
+```{r}
+listofdfs = list(
+  data.frame(TargetID = names(l_cutoff_down[["CLL vs memory B"]])),
+  data.frame(TargetID = names(l_cutoff_down[["SMZL vs memory B"]])),
+  data.frame(TargetID = names(l_cutoff_down[["MCL vs memory B"]]))
+  )
+names(listofdfs) <- c("CLL vs memory B", "SMZL vs memory B", "MCL vs memory B")
+```
+
+Run make_backgrounds() with write = FALSE to save the output as a list of lists.
+
+```{r}
+l_l_HOMER =  make_backgrounds(listofdfs=listofdfs, 
+                              reference=ref, 
+                              seed=123, 
+                              write = FALSE)
+```
+
+Run make_backgrounds() with write = TRUE and write_dir set to a specific directory to export input files (target.txt and background.txt) for HOMER motif enrichment analysis.
+
+```{r, eval=FALSE}
+make_backgrounds(listofdfs=listofdfs, 
+                 reference=ref, 
+                 seed=123, 
+                 write = TRUE, 
+                 write_dir="HOMERinputs/Bcell_example")
+```
+
+The HOMER suite can be installed from http://homer.ucsd.edu/ or from bioconda.
+Here is an example code snippet for HOMER motif enrichment analysis. Please see the official HOMER documentation for more info.
+
+```{bash, eval=FALSE}
+findMotifsGenome.pl target.txt hg19 output -bg bkg.txt -size 200 -cpg -p 12 -cache 8000
+```
+
+# Appendix
+
+This vignette was knitted in this environment:
+
+```{r}
+sessionInfo()
+```
+
